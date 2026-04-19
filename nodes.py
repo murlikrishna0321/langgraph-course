@@ -1,26 +1,23 @@
-import os
 from dotenv import load_dotenv
-from langchain_core.tools import tool
-from langchain_openai import AzureChatOpenAI
-from langchain_tavily import TavilySearch
+from langgraph.graph import MessagesState
+from langgraph.prebuilt import ToolNode
+
+from react import llm, tools
 
 load_dotenv()
 
+SYSYEM_MESSAGE = """
+You are a helpful assistant that can use tools to answer questions.
+"""
 
-@tool
-def triple(num: float) -> float:
+
+def run_agent_reasoning(state: MessagesState) -> MessagesState:
     """
-    param num: a number to triple
-    returns: the triple of the input number
+    Run the agent reasoning node.
     """
-    return float(num) * 3
+    response = llm.invoke(
+        [{"role": "system", "content": SYSYEM_MESSAGE}, *state["messages"]])
+    return {"messages": [response]}
 
 
-tools = [TavilySearch(max_results=1), triple]
-
-llm = AzureChatOpenAI(
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-).bind_tools(tools)
+tool_node = ToolNode(tools)
