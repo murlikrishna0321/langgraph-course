@@ -16,7 +16,8 @@ def triple(num: float) -> float:
     return float(num) * 3
 
 
-tools = [TavilySearch(max_results=1), triple]
+tools = [TavilySearch(max_results=3, include_answer=True,
+                      search_depth="advanced"), triple]
 
 llm = AzureChatOpenAI(
     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
